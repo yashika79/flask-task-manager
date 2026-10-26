@@ -1,0 +1,122 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="task-box">
+
+    <h2>Your Tasks</h2>
+
+    <!-- Add Task Form -->
+    <form action="{{ url_for('tasks.add_tasks') }}" method="POST"
+          class="task-form">
+
+        <input type="text" name="title"
+               placeholder="New task" required>
+
+        <label for="date">Planned date (optional)</label>
+        <input type="date" name="date" id="date" min="{{ today }}">
+
+        <button type="submit" class="btn">Add</button>
+    </form>
+
+
+    <!--  Edit Form: only visible when editing a task -->
+    {% if edit_task %}
+        <h3>Edit Task</h3>
+
+        <form method="POST"
+              action="{{ url_for('tasks.edit_task', task_id=edit_task.id) }}">
+
+            {{ form.hidden_tag() }}
+
+            {{ form.title.label }}
+            {{ form.title(required=True) }}
+
+            {{ form.date.label }}
+            {{ form.date(min=today) }}
+
+            <button type="submit" class="btn">Save Changes</button>
+
+            <a href="{{ url_for('tasks.view_tasks') }}">Cancel</a>
+        </form>
+    {% endif %}
+
+
+    <!-- C. Task List -->
+    {% if tasks %}
+
+        <form action="{{ url_for('tasks.clear_tasks') }}" method="POST">
+            <button type="submit" class="btn btn-clear">
+                Clear All Tasks
+            </button>
+        </form>
+
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>Task Title</th>
+                    <th>Status</th>
+                    <th>Planned Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <!-- Column 1: Title -->
+                    <td>{{ task.title }}</td>
+
+                    <!-- Column 2: Status -->
+                    <td>
+                        <span class="badge {{ task.status | lower | replace(' ', '-') }}">
+                            {{ task.status }}
+                        </span>
+                    </td>
+
+                    <!-- Column 3: Planned Date -->
+                    <td>
+                        {% if task.date %}
+                            {{ task.date.strftime('%d %b %Y') }}
+                        {% else %}
+                            No Date
+                        {% endif %}
+                    </td>
+
+                    <!-- Column 4: Actions -->
+
+                    <td>
+
+                    <div class="task-actions">
+                        <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}">
+                            Edit
+                        </a>
+                        
+
+                        <form action="{{ url_for('tasks.toggle_tasks', task_id=task.id) }}"
+                              method="POST">
+                            <button class="btn-small" type="submit">
+                                Change Status
+                            </button>
+                        </form>
+                        
+                        <form action="{{ url_for('tasks.delete_tasks', task_id=task.id) }}"
+                              method="POST">
+                            <button class="btn-small" type="submit">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                        
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <p>No tasks yet. Add your first task above!</p>
+    {% endif %}
+
+</div>
+{% endblock %}
